@@ -1,0 +1,266 @@
+{
+    "0": {
+        "Name": "type",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 1
+    },
+    "1": {
+        "Name": "a leakage current",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": null
+    },
+    "2": {
+        "Name": "current",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "4": {
+        "Name": "W",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "6": {
+        "Name": "VAR",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "8": {
+        "Name": "VA",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "10": {
+        "Name": "PF average",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "12": {
+        "Name": "current unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "13": {
+        "Name": "I THD average",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "14": {
+        "Name": "IGR",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 10
+    },
+    "15": {
+        "Name": "IGC",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 10
+    },
+    "16": {
+        "Name": "V1",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "18": {
+        "Name": "I1",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "20": {
+        "Name": "W",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "22": {
+        "Name": "VAR",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "24": {
+        "Name": "VA",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "26": {
+        "Name": "volt unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "27": {
+        "Name": "current unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "28": {
+        "Name": "phase",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "29": {
+        "Name": "power factor",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "30": {
+        "Name": "I1 THD",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "31": {
+        "Name": "reserved",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 1
+    },
+    "32": {
+        "Name": "V2",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "34": {
+        "Name": "I2",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "36": {
+        "Name": "W",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "38": {
+        "Name": "VAR",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "40": {
+        "Name": "VA",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "42": {
+        "Name": "volt unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "43": {
+        "Name": "current unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "44": {
+        "Name": "phase",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "45": {
+        "Name": "power factor",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "46": {
+        "Name": "I2 THD",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "47": {
+        "Name": "reserved",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 1
+    },
+    "48": {
+        "Name": "V3",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "50": {
+        "Name": "I3",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 100
+    },
+    "52": {
+        "Name": "W",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "54": {
+        "Name": "VAR",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "56": {
+        "Name": "VA",
+        "Type": "UINT32",
+        "Size": 2,
+        "Scale": 1
+    },
+    "58": {
+        "Name": "volt unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "59": {
+        "Name": "current unbalance",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "60": {
+        "Name": "phase",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "61": {
+        "Name": "power factor",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "62": {
+        "Name": "I3 THD",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 100
+    },
+    "63": {
+        "Name": "reserved",
+        "Type": "UINT16",
+        "Size": 1,
+        "Scale": 1
+    }
+}
