@@ -29,95 +29,103 @@ public class App {
         String broker = "tcp://192.168.70.203:1883";
         String clientId = "seongseong";
 
-        try (
-                InputStream addressMapStream = App.class.getClassLoader().getResourceAsStream("address_map.json");
-                InputStream detailedInfoStream = App.class.getClassLoader().getResourceAsStream("detailed_info.json");
-                MqttClient mqttClient = new MqttClient(broker, clientId)) {
-            if (addressMapStream == null || detailedInfoStream == null) {
-                System.err.println("리소스 파일을 찾을 수 없습니다.");
-                return;
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode addressMap = objectMapper.readTree(addressMapStream);
-            JsonNode detailedInfo = objectMapper.readTree(detailedInfoStream);
-
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            mqttClient.connect(connOpts);
-
-            System.out.println("Connected to MQTT broker");
-
-            master.init();
-
-            while (true) {
-                Iterator<String> addressKeys = addressMap.fieldNames();
-                while (addressKeys.hasNext()) {
-                    String addressKey = addressKeys.next();
-                    int baseAddress = Integer.parseInt(addressKey);
-                    String locationName = addressMap.get(addressKey).asText();
-
-                    System.out.printf("=== 주소 %d (%s) 데이터 ===%n", baseAddress, locationName);
-
-                    Iterator<String> detailedKeys = detailedInfo.fieldNames();
-                    while (detailedKeys.hasNext()) {
-                        String detailedKey = detailedKeys.next();
-                        JsonNode registerInfo = detailedInfo.get(detailedKey);
-
-                        int offset = Integer.parseInt(detailedKey);
-                        int registerAddress = baseAddress + offset;
-                        String name = registerInfo.get("Name").asText();
-                        String type = registerInfo.get("Type").asText();
-                        int size = registerInfo.get("Size").asInt();
-                        double scale = registerInfo.has("Scale") && !registerInfo.get("Scale").isNull()
-                                ? registerInfo.get("Scale").asDouble()
-                                : 1;
-
-                        try {
-                            ReadHoldingRegistersRequest request = new ReadHoldingRegistersRequest(1, registerAddress,
-                                    size);
-                            ReadHoldingRegistersResponse response = (ReadHoldingRegistersResponse) master.send(request);
-
-                            if (response.isException()) {
-                                System.out.printf("주소 %d (%s): Modbus 오류 - %s%n", registerAddress, name,
-                                        response.getExceptionMessage());
-                            } else {
-                                short[] values = response.getShortData();
-                                double result = convertAndScale(values, type, scale);
-
-                                if (result != 0) {
-                                    if (result < 0) {
-                                        result = Math.abs(result);
-                                    }
-
-                                    String topic = String.format("seongseong/%s/e/%s",
-                                            locationName, name);
-                                    String payload = String.format("{\"time\":%d,\"value\":%.2f}",
-                                            System.currentTimeMillis(), result);
-
-                                    MqttMessage message = new MqttMessage(payload.getBytes());
-                                    message.setQos(1);
-
-                                    mqttClient.publish(topic, message);
-                                    System.out.printf("Published to %s: %s%n", topic, payload);
-                                }
-                            }
-                        } catch (ModbusTransportException e) {
-                            System.err.printf("주소 %d (%s): 통신 오류 - %s%n", registerAddress, name, e.getMessage());
-                        }
-                    }
-                    System.out.println();
+        while (true) { // 계속 재연결을 시도
+            try (
+                    InputStream addressMapStream = App.class.getClassLoader().getResourceAsStream("address_map.json");
+                    InputStream detailedInfoStream = App.class.getClassLoader()
+                            .getResourceAsStream("detailed_info.json");
+                    MqttClient mqttClient = new MqttClient(broker, clientId)) {
+                if (addressMapStream == null || detailedInfoStream == null) {
+                    System.err.println("리소스 파일을 찾을 수 없습니다.");
+                    return;
                 }
 
-                TimeUnit.SECONDS.sleep(10);
-            }
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode addressMap = objectMapper.readTree(addressMapStream);
+                JsonNode detailedInfo = objectMapper.readTree(detailedInfoStream);
 
-        } catch (MqttException e) {
-            System.err.println("MQTT 연결 오류: " + e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            master.destroy();
+                MqttConnectOptions connOpts = new MqttConnectOptions();
+                connOpts.setCleanSession(true);
+
+                while (!mqttClient.isConnected()) {
+                    try {
+                        mqttClient.connect(connOpts);
+                        System.out.println("Connected to MQTT broker");
+                    } catch (MqttException e) {
+                        System.err.println("MQTT 연결 오류, 5초 후 재시도: " + e.getMessage());
+                        TimeUnit.SECONDS.sleep(5);
+                    }
+                }
+
+                master.init();
+
+                while (mqttClient.isConnected()) {
+                    Iterator<String> addressKeys = addressMap.fieldNames();
+                    while (addressKeys.hasNext()) {
+                        String addressKey = addressKeys.next();
+                        int baseAddress = Integer.parseInt(addressKey);
+                        String locationName = addressMap.get(addressKey).asText();
+
+                        System.out.printf("=== 주소 %d (%s) 데이터 ===%n", baseAddress, locationName);
+
+                        Iterator<String> detailedKeys = detailedInfo.fieldNames();
+                        while (detailedKeys.hasNext()) {
+                            String detailedKey = detailedKeys.next();
+                            JsonNode registerInfo = detailedInfo.get(detailedKey);
+
+                            int offset = Integer.parseInt(detailedKey);
+                            int registerAddress = baseAddress + offset;
+                            String name = registerInfo.get("Name").asText();
+                            String type = registerInfo.get("Type").asText();
+                            int size = registerInfo.get("Size").asInt();
+                            double scale = registerInfo.has("Scale") && !registerInfo.get("Scale").isNull()
+                                    ? registerInfo.get("Scale").asDouble()
+                                    : 1;
+
+                            try {
+                                ReadHoldingRegistersRequest request = new ReadHoldingRegistersRequest(1,
+                                        registerAddress, size);
+                                ReadHoldingRegistersResponse response = (ReadHoldingRegistersResponse) master
+                                        .send(request);
+
+                                if (response.isException()) {
+                                    System.out.printf("주소 %d (%s): Modbus 오류 - %s%n", registerAddress, name,
+                                            response.getExceptionMessage());
+                                } else {
+                                    short[] values = response.getShortData();
+                                    double result = convertAndScale(values, type, scale);
+
+                                    if (result != 0) {
+                                        if (result < 0) {
+                                            result = Math.abs(result);
+                                        }
+
+                                        String topic = String.format("seongseong/%s/e/%s", locationName, name);
+                                        String payload = String.format("{\"time\":%d,\"value\":%.2f}",
+                                                System.currentTimeMillis(), result);
+
+                                        MqttMessage message = new MqttMessage(payload.getBytes());
+                                        message.setQos(1);
+
+                                        mqttClient.publish(topic, message);
+                                        System.out.printf("Published to %s: %s%n", topic, payload);
+                                    }
+                                }
+                            } catch (ModbusTransportException e) {
+                                System.err.printf("주소 %d (%s): 통신 오류 - %s%n", registerAddress, name, e.getMessage());
+                            }
+                        }
+                        System.out.println();
+                    }
+
+                    TimeUnit.SECONDS.sleep(10);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                master.destroy();
+            }
         }
     }
 

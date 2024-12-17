@@ -45,40 +45,50 @@ public class MQTTSub {
     }
 
     public void start() {
-        try (MqttClient client = new MqttClient(BROKER, CLIENT_ID)) {
-            MqttConnectOptions options = new MqttConnectOptions();
-            options.setCleanSession(true);
+        while (true) { // 계속 재연결을 시도
+            try (MqttClient client = new MqttClient(BROKER, CLIENT_ID)) {
+                MqttConnectOptions options = new MqttConnectOptions();
+                options.setCleanSession(true);
 
-            client.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    logger.error("Connection lost: {}", cause.getMessage());
+                client.setCallback(new MqttCallback() {
+                    @Override
+                    public void connectionLost(Throwable cause) {
+                        logger.error("Connection lost: {}", cause.getMessage());
+                    }
+
+                    @Override
+                    public void messageArrived(String topic, MqttMessage message) {
+                        handleMessage(topic, message);
+                    }
+
+                    @Override
+                    public void deliveryComplete(IMqttDeliveryToken token) {
+                        logger.info("Delivery complete: {}", token.getMessageId());
+                    }
+                });
+
+                while (!client.isConnected()) {
+                    try {
+                        logger.info("Connecting to broker...");
+                        client.connect(options);
+                        logger.info("Connected!");
+                    } catch (Exception e) {
+                        logger.error("Connection failed, retrying in 5 seconds", e);
+                        TimeUnit.SECONDS.sleep(5);
+                    }
                 }
 
-                @Override
-                public void messageArrived(String topic, MqttMessage message) {
-                    handleMessage(topic, message);
+                logger.info("Subscribing to topics: {}, {}", TOPIC, TOPIC2);
+                client.subscribe(TOPIC);
+                client.subscribe(TOPIC2);
+
+                // 메시지를 처리하는 동안 연결 상태 유지
+                while (client.isConnected()) {
+                    TimeUnit.SECONDS.sleep(1);
                 }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    logger.info("Delivery complete: {}", token.getMessageId());
-                }
-            });
-
-            logger.info("Connecting to broker...");
-            client.connect(options);
-            logger.info("Connected!");
-
-            logger.info("Subscribing to topics: {}, {}", TOPIC, TOPIC2);
-            client.subscribe(TOPIC);
-            client.subscribe(TOPIC2);
-
-            while (true) {
-                TimeUnit.SECONDS.sleep(1);
+            } catch (Exception e) {
+                logger.error("Error in MQTT client", e);
             }
-        } catch (Exception e) {
-            logger.error("Error in MQTT client", e);
         }
     }
 
